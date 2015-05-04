@@ -34,6 +34,19 @@ angular.module('parkingapp.services', [])
 	}
 }])
 
+.factory('YouthCenterService', ['$http', '$q', function($http, $q) {
+	return {
+		getYouthCenters: function() {
+			var q = $q.defer();
+			$http.get('http://datasets.antwerpen.be/v4/gis/jeugdhuisoverzicht.json').
+				success(function(data, status, headers, config) {
+					q.resolve(data.data);
+				});
+			return q.promise;
+		}
+	}
+}])
+
 .factory('TariffService', function() {
 	//["Rood", "Lichtgroen", "Donkergroen", "Geel", "Oranje", "Blauw"]
 	var tarieven = [

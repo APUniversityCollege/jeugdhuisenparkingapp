@@ -1,6 +1,6 @@
 angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 
-.controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService, TariffService){
+.controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService, YouthCenterService, TariffService){
 	// Give the map the height of the window without the overlay bars
 	$('#map').height($( window ).height()-$('.tabs-icon-top').outerHeight()-$('#title').outerHeight());
 	// Place map beneath the title bar
@@ -47,6 +47,17 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	}
 	else {
 		colourParkingZones(zones);
+	}
+	var youthCenters = StorageService.getObject('youthCenters');
+	if (JSON.stringify(youthCenters) === '{}') {
+		YouthCenterService.getYouthCenters().then(function(yc) {
+			youthCenters = yc;
+			StorageService.setObject('youthCenters', youthCenters);
+		});
+	}
+	for (var i = 0; i < youthCenters.length; i++) {
+		var marker = L.marker([youthCenters[i].point_lat, youthCenters[i].point_lng]).addTo($scope.map);
+		marker.bindPopup(youthCenters[i].naam).openPopup();
 	}
 
 	// Colour the parking zones
