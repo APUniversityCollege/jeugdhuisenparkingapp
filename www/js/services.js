@@ -43,7 +43,21 @@ angular.module('parkingapp.services', [])
 					q.resolve(data.data);
 				});
 			return q.promise;
+		},
+		getYouthCenters2: function() {
+			var q = $q.defer();
+			$http.get('http://datasets.antwerpen.be/v4/gis/jeugdcentrumoverzicht.json').
+				success(function(data, status, headers, config) {
+					q.resolve(data.data);
+				});
+			return q.promise;
 		}
+		/* Possible to add
+		/ Cultuurcentra : http://datasets.antwerpen.be/v4/gis/cultureelcentrumoverzicht.json
+		/ Concertzalen: http://datasets.antwerpen.be/v4/gis/concertzaaloverzicht.json
+		/ Podia: http://datasets.antwerpen.be/v4/gis/podiumoverzicht.json
+		/ Theaters: http://datasets.antwerpen.be/v4/gis/theateroverzicht.json
+		/*
 	}
 }])
 
