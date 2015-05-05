@@ -57,7 +57,7 @@ angular.module('parkingapp.services', [])
 		/ Concertzalen: http://datasets.antwerpen.be/v4/gis/concertzaaloverzicht.json
 		/ Podia: http://datasets.antwerpen.be/v4/gis/podiumoverzicht.json
 		/ Theaters: http://datasets.antwerpen.be/v4/gis/theateroverzicht.json
-		/*
+		*/
 	}
 }])
 

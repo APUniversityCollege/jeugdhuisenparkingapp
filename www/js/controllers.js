@@ -48,7 +48,7 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	else {
 		colourParkingZones(zones);
 	}
-	var youthCenters = {};
+	var youthCenters = [];
 	if (JSON.stringify(youthCenters) === '{}') {
 		YouthCenterService.getYouthCenters().then(function(yc) {
 			youthCenters = yc;
