@@ -1,8 +1,20 @@
 <view>
 	<content has-header='true' has-tabs='true' padding='true'>
 		<div>
-			<center><div id='dsTitle'><h3>Settings</h3></div></center>
+			<center><div id='dsTitle'><h3>Instellingen</h3></div></center>
 			<div class='list'>
+				<a class="item item-icon-left">
+					<i class="icon ion-arrow-swap"></i>Afstand (in meter)
+					<span class="item-note">
+						<input type="number" ng-model="distance" style="width: 100px; height: 22px;">
+					</span>
+				</a>
+				<div class="item item-divider">Sla instellingen op</div>
+				<a class="item item-button-right" style="height: 52px;">
+					<button class="button button-positive" ng-click="save(distance)">
+						<i class="icon ion-checkmark-round"></i>
+					</button>
+				</a>
 				<ion-content>
 					<ion-toggle ng-model="showcircle" toggle-class="toggle-calm" ng-checked="showcircle">Show circle on center</ion-toggle>
 				</ion-content>

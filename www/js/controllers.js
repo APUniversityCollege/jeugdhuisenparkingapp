@@ -9,19 +9,21 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	if ($rootScope.foundAddress) {
 		//$scope.map.setView($rootScope.foundAddress
 		center = $rootScope.foundAddress;
-		zoom = 16;
+		zoom = 14;
 	}
 	else { // Grote Markt, Antwerpen
 		center.lat = 51.221311;
 		center.lng = 4.399160;
 		zoom = 12;
 	}
-	
+	if ($rootScope.distance == undefined) {
+		$rootScope.distance = 500;
+	}
 	//$scope.map = new L.Map('map');
 	$scope.map = new L.map('map', {
 		center: center,
 		zoom: zoom,
-		maxZoom: 20,
+		maxZoom: 16,
 		zoomControl: false,
 		doubleClickZoom: false,
 		scrollWheelZoom: true,
@@ -48,8 +50,9 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	else {
 		colourParkingZones(zones);
 	}
-	var youthCenters = [];
+	var youthCenters = StorageService.getObject('youthCenters');
 	if (JSON.stringify(youthCenters) === '{}') {
+		youthCenters = [];
 		YouthCenterService.getYouthCenters().then(function(yc) {
 			youthCenters = yc;
 		});
@@ -60,6 +63,9 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 			markYouthCenters(youthCenters);
 			StorageService.setObject('youthCenters', youthCenters);
 		});
+	}
+	else  {
+		markYouthCenters(youthCenters);
 	}
 	function markYouthCenters(youthCenters) {
 		for (var i = 0; i < youthCenters.length; i++) {
@@ -114,12 +120,26 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		}
 	}
 	
-	var circlecenter = L.circle(center, 500, {
-		color: 'blue',
-		fillColor: '#00F',
-		fillOpacity: 0.5
-	});
-	$scope.map.addLayer(circlecenter);
+	function drawCenter() {
+		$scope.map.eachLayer(function(data) {
+			if (data._mRadius != undefined) {
+				$scope.map.removeLayer(data);
+			}
+		});
+		var centerSmallCircle = L.circle(center, 2, {
+			color: 'black',
+			fillColor: '#FFF',
+			fillOpacity: 1
+		});
+		var centerBigCircle = L.circle(center, $rootScope.distance, {
+			color: 'blue',
+			fillColor: '#00F',
+			fillOpacity: 0.5
+		});
+		$scope.map.addLayer(centerBigCircle);
+		$scope.map.addLayer(centerSmallCircle);
+	}
+	drawCenter();	
 	
 	// normal click
 	$scope.map.on('click', function(e){
@@ -145,8 +165,11 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		//$scope.map.locate({setView: true, maxZoom: 16});
 		setTitle('Even geduld, positie wordt bepaald...');
 		navigator.geolocation.getCurrentPosition(function(position) {
-			var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo($scope.map); // Create marker
-			marker.bindPopup('<b>U bent hier</b>').openPopup(); // Bind popup to marker
+			center.lat = position.coords.latitude;
+			center.lng = position.coords.longitude;
+			drawCenter();
+			//var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo($scope.map); // Create marker
+			//marker.bindPopup('<b>U bent hier</b>').openPopup(); // Bind popup to marker
 			$scope.map.setView([position.coords.latitude, position.coords.longitude], 12); // Set view of map to location and change zoom
 			setTitle(''); // Empty title bar
 		}, function(err){ console.log(err); });
@@ -198,6 +221,7 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	};
 	
 	addMarker = function(e) {
+		console.log(e);
 		var lat = e.latlng.lat;
 		var lng = e.latlng.lng;
 		var tariff;
@@ -224,6 +248,33 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 				popup.setLatLng(e.latlng).setContent('Geen tarief').openOn($scope.map);
 			}
 		});
+		
+		var location = L.latLng(e.latlng.lat, e.latlng.lng);
+		var closest;
+		$.each(youthCenters, function(key, value) {
+			if (key == 0) {
+				closest = value;
+			}
+			else {
+				var destination = L.latLng(value.point_lat, value.point_lng);
+				var closest_p = L.latLng(closest.point_lat, closest.point_lng);
+				if (location.distanceTo(destination) < location.distanceTo(closest_p)) {
+					closest = value;
+				}
+			}
+		});
+		$scope.map.eachLayer(function(data) {
+			if (data.options.color == 'blue') {
+				$scope.map.removeLayer(data);
+			}
+		});
+		center = {}; center.lat = closest.point_lat; center.lng = closest.point_lng;
+		var centerSmallCircle = L.circle(center, 2, {
+			color: 'blue',
+			fillColor: '#00F',
+			fillOpacity: 1
+		});
+		$scope.map.addLayer(centerSmallCircle);
 	};
 })
 
@@ -246,4 +297,14 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 
 .controller('DataController', function($scope, $rootScope, $location) {
 	$scope.airplaneMode = true;
+	if ($rootScope.distance == undefined) {
+		$scope.distance = 500;
+	}
+	else {
+		$scope.distance = $rootScope.distance;
+	}
+
+	$scope.save = function(distance) {
+		$rootScope.distance = distance;
+	}
 });
